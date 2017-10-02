@@ -1,0 +1,58 @@
+{
+  "name": "serverless-star",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive -R min tests",
+    "lint": "./node_modules/.bin/eslint . bin/serverless-artillery",
+    "publish": "./node_modules/.bin/np"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nordstrom/serverless-star.git"
+  },
+  "author": "Charles Sullivan <sullux@gmail.com> (https://github.com/sullux)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Nordstrom/serverless-star/issues"
+  },
+  "homepage": "https://github.com/Nordstrom/serverless-star#readme",
+  "devDependencies": {
+    "eslint": "^4.7.2",
+    "eslint-config-airbnb": "^15.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-jsx-a11y": "^5.1.1",
+    "eslint-plugin-react": "^7.4.0",
+    "mocha": "^3.0.2",
+    "np": "^2.16.0",
+    "nyc": "^11.0.3"
+  },
+  "nyc": {
+    "check-coverage": true,
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100,
+    "include": [
+      "**/*.js"
+    ],
+    "exclude": [
+      "tests",
+      "test.js",
+      "coverage"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ],
+    "extension": [
+      ".jsx"
+    ],
+    "cache": true,
+    "all": true
+  },
+  "dependencies": {
+    "aws-sdk": "^2.125.0"
+  }
+}
