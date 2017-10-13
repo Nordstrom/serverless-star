@@ -1,0 +1,171 @@
+#!/usr/bin/env node
+
+const os = require('os')
+const packageJson = require('../package.json')
+const star = require('../lib/')
+
+/**
+ * Determine whether any of the given flags exists in the given argv (object representation)
+ * @param flags The set flags to look for
+ * @param argv The object containing the processed CLI arguments
+ * @returns boolean Whether one of the given flags was a truthy value within the given argv object.
+ */
+const hasFlag = (flags, argv) => flags.some(
+  (flag) => {
+    const f = flag.split('-').join('') // remove '-' or '--'
+    return f in argv && argv[f] // flag is defined in argv object (argv name is misleading) and has a truthy value
+  } // eslint-disable-line comma-dangle
+)
+
+// TODO Collected TODO(s):
+// TODO 1. Allow plugins to augment or modify the canned sls-star command description (second argument to .command)
+// TODO 2. Merge any options supplied by any plugin? (to produce the third argument to .command)
+// TODO 3. Provide a command arguments validation function to enable plugins to augment validation (fourth argument to .command)
+// TODO 4. Allow plugins to modify command names?  (e.g. "script" [from slsart] is more generally "event" [for serverless projects])
+// TODO *. Others that are more code related than plugin interface related
+
+const yargs = require('yargs')
+  .help()
+  .version(packageJson.version)
+  .options({
+    D: {
+      alias: 'debug',
+      description: 'Execute the command in debug mode.  It will be chatty about what it is happening in the code.',
+      requiresArg: false,
+    },
+    V: {
+      alias: 'verbose',
+      description: 'Execute the command in verbose mode.  It will be chatty about what it is attempting to accomplish.',
+      requiresArg: false,
+    },
+  })
+  .global('D', 'V')
+  .command(
+    'deploy',
+    'Deploy the function that will execute your jobs.  ' +
+    'See https://serverless.com/framework/docs/providers/aws/cli-reference/deploy/ for reference.', // TODO #1
+    {} // TODO #2
+    // TODO #3
+  )
+  .command(
+    'invoke',
+    'Invoke your function with your event.  Will prefer an event given by `-d`, `--data`, `-p`, or ' +
+    '`--path` over a `event.[yml|json]` file in the current directory over the default event.  ' +
+    'See https://serverless.com/framework/docs/providers/aws/cli-reference/invoke/ for reference.', // TODO #1
+    {
+      d: {
+        alias: 'data',
+        description: 'A stringified event to invoke the remote function with.',
+        requiresArg: true,
+      },
+      p: {
+        alias: 'path',
+        description: 'A path to the file containing the event to invoke the remote function with.',
+        requiresArg: true,
+      },
+      si: {
+        alias: 'stdIn',
+        description: 'Have serverless read the event to invoke the remote function with from the "standard in" stream.',
+        requiresArg: false,
+      },
+    }, // TODO #2
+    /**
+     * Custom argument rejection logic, to deal with legacy, argument conflicts (between slsart and sls), and
+     * unsupported flags.
+     * @param argv The array of arguments that were provided to the CLI
+     */
+    // TODO generalize, externalize, and use
+    (argv) => { // TODO #3
+      const breakingFlags = [ // TODO allow for description of breakage reason, for error reporting
+      ]
+      const reservedFlags = [
+      ]
+      const unsupportedFlags = [
+      ]
+      if (hasFlag(breakingFlags, argv)) {
+        console.log([
+          os.EOL,
+          `###!!! BREAKING CHANGE !!!###${os.EOL}${os.EOL}`,
+          `TL;DR: a flag you supplied is one of ${breakingFlags.join('", "')}${os.EOL}${os.EOL}`,
+          `**BREAKING CHANGE**${os.EOL}`,
+          'A previously supported flag was invalidated one of the plugins you are using.  We\'re sorry this happened!  ',
+          'Hopefully, the implementors and maintainers of that plugin were responsibly using semver and so continue to ' +
+          `release their changes with a version of 0.x.x.${os.EOL}`,
+          // TODO custom message OR the below?
+          'We apologize on their behalf that they did not forsee the consequence of providing that flag.  On the ' +
+          `positive side, they probably have a great reason and if you look into it, you'll be glad.${os.EOL}${os.EOL}`,
+          `###!!! BREAKING CHANGE !!!###${os.EOL}${os.EOL}`,
+        ].join(''))
+        process.exit(1)
+      }
+      // ##!! LEGACY MANAGEMENT END   !!##
+      if (hasFlag(reservedFlags, argv)) {
+        console.log([
+          os.EOL,
+          `!ERROR!${os.EOL}`,
+          'One of the `serverless` flags you provided is reserved for exclusive `serverless-star` use, ',
+          `reserved flags include: "${
+            Object.keys(reservedFlags).map(key => reservedFlags[key]).join('", "')
+          }".${os.EOL}`,
+          'Please see the "reserved flags" documentation in the README ',
+          `(https://www.npmjs.com/package/serverless-star#reserved-flags).${os.EOL}`,
+        ].join(''))
+        process.exit(1)
+      } else if (hasFlag(unsupportedFlags, argv)) {
+        console.log([
+          os.EOL,
+          `!ERROR!${os.EOL}`,
+          `One of the flags you provided is unsupported by \`serverless-star\`.  Unsupported flags include: "${
+            Object.keys(unsupportedFlags).map(key => unsupportedFlags[key]).join('", "')}"${os.EOL}`,
+          'Please see the "unsupported flags" documentation in the README ',
+          `(https://www.npmjs.com/package/serverless-star#unsupported-flags).${os.EOL}`,
+        ].join(''))
+        process.exit(1)
+      }
+    } // eslint-disable-line comma-dangle
+  )
+  .command(
+    'remove',
+    'Remove the function and the associated resources created for or by it.  See ' +
+    'https://serverless.com/framework/docs/providers/aws/cli-reference/remove/ for reference.', // TODO #1
+    {} // TODO #2
+    // TODO #3
+  )
+  .command(
+    'event',  // TODO #4
+    'Create a local event file so that you can customize it for your specific requirements.', // TODO #1
+    {
+      o: {
+        alias: 'out',
+        description: 'The file to output the generated event in to.',
+        requiresArg: true,
+        type: 'string',
+      }, // TODO #2
+    } // eslint-disable-line comma-dangle
+    // TODO #3
+  )
+  .command(
+    'assets', // TODO #4
+    'Create a local copy of the deployment assets for modification and deployment.  See ' +
+    'https://docs.serverless.com for documentation.', // TODO #1
+    {} // TODO #2
+    // TODO #3
+  )
+  .demand(1)
+  .strict()
+  .argv
+
+const command = yargs._[0]
+
+if (yargs.debug) {
+  console.log(`options were:${os.EOL}${JSON.stringify(yargs, null, 2)}`)
+  console.log(`command that will be executed: star[${command}](options)`)
+}
+
+star[command](yargs)
+  .catch((ex) => {
+    console.log(ex.message)
+    if (yargs.verbose) {
+      console.log(ex.stack)
+    }
+  })

@@ -1,10 +1,14 @@
 {
   "name": "serverless-star",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A serverless.com framework based job distribution tool to distribute a job over multiple cloud functions according to job and cloud provider specific plugins",
   "main": "index.js",
+  "bin": {
+    "serverless-star": "./bin/serverless-star",
+    "star": "./bin/serverless-star"
+  },
   "scripts": {
-    "test": "./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive -R min tests",
+    "test": "./node_modules/.bin/nyc ./node_modules/.bin/mocha -r aws-sdk --recursive -R min tests",
     "lint": "./node_modules/.bin/eslint . bin/serverless-artillery",
     "publish": "./node_modules/.bin/np"
   },
@@ -12,12 +16,24 @@
     "type": "git",
     "url": "git+https://github.com/Nordstrom/serverless-star.git"
   },
-  "author": "Charles Sullivan <sullux@gmail.com> (https://github.com/sullux)",
+  "author": "Nordstrom, Inc.",
+  "contributors": [
+    "Charles Sullivan <sullux@gmail.com> (https://github.com/sullux)",
+    "Erik Erikson <erik.erikson@gmail.com> (https://github.com/erikerikson)"
+  ],
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/Nordstrom/serverless-star/issues"
   },
-  "homepage": "https://github.com/Nordstrom/serverless-star#readme",
+  "homepage": "https://github.com/Nordstrom/serverless-artillery#readme",
+  "dependencies": {
+    "aws-sdk": "^2.5.0",
+    "get-stdin": "^5.0.1",
+    "js-yaml": "^3.6.1",
+    "semver": "^5.3.0",
+    "shortid": "^2.2.6",
+    "yargs": "^6.2.0"
+  },
   "devDependencies": {
     "eslint": "^4.7.2",
     "eslint-config-airbnb": "^15.1.0",
@@ -51,8 +67,5 @@
     ],
     "cache": true,
     "all": true
-  },
-  "dependencies": {
-    "aws-sdk": "^2.125.0"
   }
 }

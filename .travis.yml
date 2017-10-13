@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - "6.10.3"
+  - "6"
+  - "7"
+  - "8"
+before_script:
+  - 'if [ "$NPM_VERSION" ]; then npm install -g npm@^$NPM_VERSION; fi'
+  - 'npm --version'
+  - 'npm i -g serverless'
+
+env:
+  - NPM_VERSION=2
+  - NPM_VERSION=3
