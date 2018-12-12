@@ -89,7 +89,8 @@ This project implements a load-generator. Note that this example is extremely si
 star:
   plan: # step name/lambda name
     handler: replay.generateLoad
-    timeout: 600
+    function:
+      timeout: 600
   execute:
     handler: replay.executeTests
 ```
@@ -159,4 +160,57 @@ The queue for _execute_ invocations.
 
 ## Declarative API
 
-_work in progress..._
+```yml
+star: # Required. The top-level declaration for a serverless-star project.
+
+  name: [string] # 0-1. A string with which to prefix all assets.
+
+  [step name]: # 1-n. A step defines a queue and lambda that will run a workload
+               # for a given step.
+
+    ignoreErrors: [boolean] # 0-1. If true, steps will be treated as complete
+                            # even if the handler throws or rejects.
+
+    function: # 0-1.
+      [properties]: [any] # 0-n. Any properties for the function.
+
+    queue: # 0-1.
+      [properties]: [any] # 0-n. Any properties for the queue.
+```
+
+When `serverless-star` is processing the job declaration, it merges its own properties into your declaration. This allows you to specify your own queue and function properties without breaking the job. For example, to reduce the SQS batch size from 10 (the default) to 1 in the `plan` step, your yml might look like this:
+
+```yml
+star:
+  plan:
+    handler: my-job.plan
+    function:
+      events:
+        - sqs:
+          batchSize: 1
+  execute:
+    handler: my-job.execute
+```
+
+Note that some properties will be overwritten by `serverless-star`. For example, if you were to try to provide an `arn` in the above SQS event, it would be overwritten by the correct ARN of the internally-generated queue.
+
+## Handler Function
+
+The handler function is called for each dequeued step. If the lambda received more than one message from the queue, the handler is called for each message concurrently. The handler function has the following signature:
+
+```typescript
+handler(
+  data: <any>,
+  generate: <function({ step: <string>, data: <any>)>
+): <promise|any>
+```
+
+**Arguments**
+* data: the data from the queued message
+* generate: a function that can be called to enqueue further steps
+
+**Return Value**
+If the handler returns a promise, the lambda will not complete until the promise resolves. Since the lambda may invoke many handlers concurrently, the lambda will not complete until all promises have resolved.
+
+**Error Handling**
+The lambda will catch any handler errors. In the case of a caught error or a rejected promise, behavior will depend on the `ignoreErrors` setting. If false (the default), an error or rejection will cause the step(s) to be re-queued for subsequent reprocessing. If true, errors will be logged but will not cause steps to be re-queued.
