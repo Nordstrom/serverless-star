@@ -107,7 +107,8 @@ module.exports.generateLoad = ({ rps, duration, url }, generate) => {
       if (endTime < Date.now()) {
         return resolve()
       }
-      executors.map(count => generate({ step: 'execute', data: url }))
+      // invoke the `execute` step [rps] times:
+      executors.map(() => generate({ step: 'execute', data: url }))
       setTimeout(executeNext, 1000)
     }
     executeNext()
