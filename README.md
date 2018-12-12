@@ -130,4 +130,33 @@ generate({ step: 'plan', data: { rps, duration, url } })
 
 ## How It Works
 
+Serverless star uses SQS behind the scene to stage and distribute workload. To "generate" a step invocation is to enqueue a serialized value to be deserialized and passed to a handler at a later time. Given the following `serverless.yml` file:
+
+```yml
+star:
+  plan:
+    handler: my-job.plan
+  execute:
+    handler: my-job.execute
+```
+
+the following resources will be created:
+
+**Lambda: plan**
+The lambda handling items in the _plan_ queue and calling `require('./my-job.js').plan(message)` for each dequeued message.
+
+**Lambda: execute**
+The lambda handling items in the _execute_ queue and calling `require('./my-job.js').execute(message)` for each dequeued message.
+
+**Lambda: generate**
+A helper function that manually enqueues a step. This function is not used internally. For example, calling this function with an argument `{ step: 'plan', data: 'foo' }` will cause the _plan_ handler to be called like this: `require('./my-job.js').plan('foo')`. This function provides an easy way to "kick off" a job either manually or in response to an API Gateway request, for example.
+
+**SQS: plan**
+The queue for _plan_ invocations.
+
+**SQS: execute**
+The queue for _execute_ invocations.
+
+## Declarative API
+
 _work in progress..._
