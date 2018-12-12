@@ -1,6 +1,8 @@
 # serverless-star
 -------------
 
+_NOTE: this document is aspirational. These features are not yet implemented. This README describes the desired future state of the project._
+
 _Serverless Star_ is a serverless plugin that allows an engineer to easily define, generate, and process distributed workloads of any size. This could be used for test load generation, ETL jobs, mapreduce jobs, plan/execute patterns, scatter/gather tasks, or any other distributed task that needs at-least-once guarantees but not order guarantees.
 
 A _serverless star_ job can have between 1 and _n_ steps. Mapreduce has two steps (map and reduce), an ETL job has three steps (extract, transform and load), and other types of jobs may have more or fewer. Steps are defined in the `serverless.yml` file and the handler functions for each step are defined in your `.js` file(s) and referenced in the `serverless.yml`.
